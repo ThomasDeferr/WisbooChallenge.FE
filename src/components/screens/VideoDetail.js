@@ -95,6 +95,7 @@ const VideoDetail = ({ videoMedia, setVideoMedia }) => {
             pageSize: 4,
           }}
           dataSource={commentsSorted}
+          locale={{ emptyText: <div></div> }}
           renderItem={(item) => (
             <li>
               <Comment

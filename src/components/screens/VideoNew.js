@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import PropTypes from "prop-types";
-import { Button, Divider, Input, Space } from "antd";
+import { Button, Divider, Input, Space, Modal } from "antd";
 import WistiaUploader from "../commons/WistiaUploader";
 import useFetch from "../../hooks/useFetch";
 import { API_ENDPOINTS, WISTIA_DATA_API_ENDPOINTS } from "../../config/api";
@@ -75,13 +75,35 @@ const VideoNew = ({ onSuccess, onCancel }) => {
   }, [isCompletedDelete]); // eslint-disable-line
   //
 
+  const validateData = () => {
+    var hasError = false;
+    var message = "";
+
+    if (!hashed_id) {
+      hasError = true;
+      message += "El Video es obligatorio.\n";
+    }
+    if (!title) {
+      hasError = true;
+      message += "El Título del video es obligatorio.\n";
+    }
+
+    hasError &&
+      Modal.warning({
+        title: "Datos obligatorios",
+        content: message.split("\n").map((msj, i) => <div key={i}>{msj}</div>),
+      });
+
+    return !hasError;
+  };
   const handleUploadVideo = (e) => {
-    setFetchBody({
-      hashed_id,
-      title,
-      color: color.replace("#", ""),
-      thumbnail_url,
-    });
+    validateData() &&
+      setFetchBody({
+        hashed_id,
+        title,
+        color: color.replace("#", ""),
+        thumbnail_url,
+      });
     e.preventDefault();
   };
   const handleCancel = (e) => {
