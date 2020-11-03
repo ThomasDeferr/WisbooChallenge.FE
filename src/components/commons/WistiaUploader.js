@@ -34,7 +34,7 @@ const WistiaUploader = ({ setHashedId, setThumbnailUrl, playerColor }) => {
         setThumbnailUrl(media.thumbnail.url);
       });
     });
-  }, []);
+  }, []); // eslint-disable-line
 
   return (
     <StyledDivResponsiveUploader id="wistia_uploader"></StyledDivResponsiveUploader>
@@ -44,7 +44,7 @@ const WistiaUploader = ({ setHashedId, setThumbnailUrl, playerColor }) => {
 WistiaUploader.defaultProps = {
   setHashedId: () => {},
   setThumbnailUrl: () => {},
-  playerColor: "ffffff",
+  playerColor: "0000ff",
 };
 
 WistiaUploader.propTypes = {

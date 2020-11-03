@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import { Button, Divider, Input, Space } from "antd";
 import WistiaUploader from "../commons/WistiaUploader";
 import useFetch from "../../hooks/useFetch";
-import { API_ENDPOINTS } from "../../config/api";
+import { API_ENDPOINTS, WISTIA_DATA_API_ENDPOINTS } from "../../config/api";
 
 const StyledDivContainer = styled.div`
   width: 100%;
@@ -15,7 +15,7 @@ const StyledDivToolbar = styled.div`
   width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: right;
+  justify-content: flex-end;
 `;
 const StyledWistiaUploader = styled(WistiaUploader)`
   width: 100%;
@@ -37,23 +37,43 @@ const VideoNew = ({ onSuccess, onCancel }) => {
   const [hashed_id, setHashedId] = useState("");
   const [thumbnail_url, setThumbnailUrl] = useState("");
   const [title, setTitle] = useState("");
-  const [color, setColor] = useState("");
+  const [color, setColor] = useState("#0000ff");
 
+  //Fetch POST
   const [fetchBody, setFetchBody] = useState();
-  const [doFetch, { isCompleted, isSuccess }] = useFetch({
+  const [
+    doFetchPost,
+    { isCompleted: isCompletedPost, isSuccess: isSuccessPost },
+  ] = useFetch({
     url: API_ENDPOINTS.VIDEO_MEDIAS,
     options: { method: "POST" },
     body: fetchBody,
   });
+  //
+
+  //Fetch DELETE
+  const [doFetchDelete, { isCompleted: isCompletedDelete }] = useFetch({
+    url: `${WISTIA_DATA_API_ENDPOINTS.MEDIAS}/${hashed_id}.json`,
+    options: { method: "DELETE" },
+    params: { access_token: process.env.REACT_APP_WISTIA_ACCESS_TOKEN },
+  });
+  //
+
+  //useEffect POST
+  useEffect(() => {
+    fetchBody && doFetchPost();
+  }, [fetchBody]); // eslint-disable-line
 
   useEffect(() => {
-    fetchBody && doFetch();
-  }, [fetchBody]);
+    isCompletedPost && isSuccessPost && onSuccess();
+  }, [isCompletedPost, isSuccessPost]); // eslint-disable-line
+  //
 
+  //useEffect DELETE
   useEffect(() => {
-    console.log(isCompleted && isSuccess);
-    isCompleted && !isSuccess && onSuccess();
-  }, [isCompleted, isSuccess]);
+    isCompletedDelete && onCancel();
+  }, [isCompletedDelete]); // eslint-disable-line
+  //
 
   const handleUploadVideo = (e) => {
     setFetchBody({
@@ -65,7 +85,7 @@ const VideoNew = ({ onSuccess, onCancel }) => {
     e.preventDefault();
   };
   const handleCancel = (e) => {
-    onCancel();
+    hashed_id ? doFetchDelete() : onCancel();
     e.preventDefault();
   };
 

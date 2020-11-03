@@ -36,7 +36,7 @@ const WistiaPlayer = ({ hashedId, playerColor }) => {
         playerColor: playerColor,
       },
     });
-  }, []);
+  }, [hashedId, playerColor]);
 
   return (
     <StyledDivResponsivePadding className="wistia_responsive_padding">

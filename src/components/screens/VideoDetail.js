@@ -1,7 +1,7 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import PropTypes from "prop-types";
-import { Button, Input, List, Space } from "antd";
+import { Button, Input, List } from "antd";
 import WistiaPlayer from "../commons/WistiaPlayer";
 import Comment from "../commons/Comment";
 import moment from "moment";
@@ -52,14 +52,17 @@ const VideoDetail = ({ videoMedia, setVideoMedia }) => {
 
   useEffect(() => {
     fetchBody && doFetch();
-  }, [fetchBody]);
+  }, [fetchBody]); // eslint-disable-line
 
   useEffect(() => {
     isCompleted &&
       isSuccess &&
       response &&
-      setVideoMedia({ ...videoMedia, comments: [...comments, response] });
-  }, [isCompleted, isSuccess, response]);
+      setVideoMedia({
+        ...videoMedia,
+        comments: [...comments, response],
+      });
+  }, [isCompleted, isSuccess, response]); // eslint-disable-line
 
   const handleSendComment = (e) => {
     setFetchBody({ content: commentContent });

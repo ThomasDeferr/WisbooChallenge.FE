@@ -26,13 +26,12 @@ const CardVideo = ({ video, onClick }) => {
       cover={<StyledImage alt="" src={thumbnail_url} />}
       onClick={(e) => onClick({ e, video })}
     >
-      <Card.Meta title={title} description={description} color={color} />
+      <StyledCardMeta title={title} description={description} color={color} />
     </StyledCard>
   );
 };
 
 CardVideo.defaultProps = {
-  placeholder: "",
   onClick: () => {},
 };
 

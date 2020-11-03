@@ -37,3 +37,6 @@ export const isSuccessfulStatusCode = (statusCode) => {
 };
 
 export const isEmptyArray = (array) => !Array.isArray(array) || !array.length;
+
+export const sortDescending = (array, field) =>
+  array.sort((a, b) => b[field] - a[field]);
