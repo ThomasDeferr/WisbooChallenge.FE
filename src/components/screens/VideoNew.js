@@ -1,12 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import PropTypes from "prop-types";
-import { Button, Input } from "antd";
+import { Button, Divider, Input, Space } from "antd";
+import WistiaUploader from "../commons/WistiaUploader";
+import useFetch from "../../hooks/useFetch";
+import { API_ENDPOINTS } from "../../config/api";
 
 const StyledDivContainer = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
+`;
+const StyledDivToolbar = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: right;
+`;
+const StyledWistiaUploader = styled(WistiaUploader)`
+  width: 100%;
 `;
 const StyledLabel = styled.label`
   width: 100%;
@@ -15,31 +27,98 @@ const StyledLabel = styled.label`
 const StyledInput = styled(Input)`
   margin-top: 5px;
 `;
+const StyledInputColor = styled.input`
+  width: 135px;
+  height: 30px;
+  padding: 2px;
+`;
 
-const VideoNew = () => {
-  const handleSubirVideo = () => {};
+const VideoNew = ({ onSuccess, onCancel }) => {
+  const [hashed_id, setHashedId] = useState("");
+  const [thumbnail_url, setThumbnailUrl] = useState("");
+  const [title, setTitle] = useState("");
+  const [color, setColor] = useState("");
+
+  const [fetchBody, setFetchBody] = useState();
+  const [doFetch, { isCompleted, isSuccess }] = useFetch({
+    url: API_ENDPOINTS.VIDEO_MEDIAS,
+    options: { method: "POST" },
+    body: fetchBody,
+  });
+
+  useEffect(() => {
+    fetchBody && doFetch();
+  }, [fetchBody]);
+
+  useEffect(() => {
+    console.log(isCompleted && isSuccess);
+    isCompleted && !isSuccess && onSuccess();
+  }, [isCompleted, isSuccess]);
+
+  const handleUploadVideo = (e) => {
+    setFetchBody({
+      hashed_id,
+      title,
+      color: color.replace("#", ""),
+      thumbnail_url,
+    });
+    e.preventDefault();
+  };
+  const handleCancel = (e) => {
+    onCancel();
+    e.preventDefault();
+  };
 
   return (
     <StyledDivContainer>
-      <div>UPLOAD</div>
+      <StyledWistiaUploader
+        playerColor={color}
+        setHashedId={setHashedId}
+        setThumbnailUrl={setThumbnailUrl}
+      />
 
       <StyledLabel>
         Título
-        <StyledInput placeholder="Título del video" />
+        <StyledInput
+          placeholder="Título del video"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
       </StyledLabel>
 
       <StyledLabel>
-        Color del reproductor
-        <div>COLOR PICKER</div>
+        <div>Color del reproductor</div>
+        <StyledInputColor
+          type="color"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+        />
       </StyledLabel>
 
-      <div>
-        <Button type="primary" onClick={handleSubirVideo}>
-          Subir video
-        </Button>
-      </div>
+      <Divider />
+
+      <StyledDivToolbar>
+        <Space>
+          <Button type="default" danger onClick={handleCancel}>
+            Cancelar
+          </Button>
+          <Button type="primary" onClick={handleUploadVideo}>
+            Subir video
+          </Button>
+        </Space>
+      </StyledDivToolbar>
     </StyledDivContainer>
   );
+};
+
+VideoNew.defaultProps = {
+  onSuccess: () => {},
+  onCancel: () => {},
+};
+
+VideoNew.propTypes = {
+  onSuccess: PropTypes.func,
+  onCancel: PropTypes.func,
 };
 
 export default VideoNew;

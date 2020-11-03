@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import styled from "styled-components";
 import SectionTitle from "../commons/SectionTitle";
 import { Button } from "antd";
@@ -6,6 +6,8 @@ import CardVideo from "../commons/CardVideo";
 import Modal from "antd/lib/modal/Modal";
 import VideoNew from "./VideoNew";
 import VideoDetail from "./VideoDetail";
+import { API_ENDPOINTS } from "../../config/api";
+import useFetch from "../../hooks/useFetch";
 
 const StyledDivContainer = styled.div`
   width: 100%;
@@ -16,7 +18,8 @@ const StyledDivToolbar = styled.div`
   width: 100%;
   height: 50px;
   display: flex;
-  justify-content: right;
+  flex-direction: row;
+  justify-content: flex-end;
 `;
 const StyledDivVideosContainer = styled.div`
   width: 100%;
@@ -27,43 +30,32 @@ const StyledDivVideosContainer = styled.div`
   flex-wrap: wrap;
 `;
 
-const videos = [
-  {
-    id: 1,
-  },
-  {
-    id: 2,
-  },
-  {
-    id: 3,
-  },
-  {
-    id: 4,
-  },
-  {
-    id: 5,
-  },
-  {
-    id: 6,
-  },
-  {
-    id: 7,
-  },
-  {
-    id: 8,
-  },
-  {
-    id: 9,
-  },
-  {
-    id: 10,
-  },
-];
-
 const VideoList = () => {
   const [modalNewVideoVisible, setModalNewVideoVisible] = useState(false);
   const [modalWatchVideoVisible, setModalWatchVideoVisible] = useState(false);
+  const [videoMedias, setVideoMedias] = useState([]);
   const [videoSelected, setVideoSelected] = useState(null);
+  const [videoAdded, setVideoAdded] = useState(false);
+
+  const [doFetchGet, { response, loading }] = useFetch({
+    url: API_ENDPOINTS.VIDEO_MEDIAS,
+  });
+
+  useEffect(() => doFetchGet(), []);
+  useEffect(() => {
+    if (videoAdded) {
+      doFetchGet();
+      setModalNewVideoVisible(false);
+      setVideoAdded(false);
+    }
+  }, [videoAdded]);
+
+  useEffect(() => {
+    var result = response?.results;
+    result = result?.sort((a, b) => a.id - b.id);
+
+    setVideoMedias(result ?? []);
+  }, [response]);
 
   const openModalNewVideo = () => setModalNewVideoVisible(true);
   const closeModalNewVideo = () => setModalNewVideoVisible(false);
@@ -86,7 +78,7 @@ const VideoList = () => {
         </StyledDivToolbar>
         <SectionTitle title="Librería de videos" />
         <StyledDivVideosContainer>
-          {videos.map((v) => (
+          {videoMedias.map((v) => (
             <CardVideo
               key={v.id}
               video={v}
@@ -95,25 +87,38 @@ const VideoList = () => {
           ))}
         </StyledDivVideosContainer>
       </StyledDivContainer>
+
       <Modal
         title="Sube tu video"
+        width={700}
         centered
+        maskClosable={false}
         visible={modalNewVideoVisible}
         footer={null}
         destroyOnClose={true}
         onCancel={closeModalNewVideo}
       >
-        <VideoNew />
+        <VideoNew
+          onSuccess={() => setVideoAdded(true)}
+          onCancel={closeModalNewVideo}
+        />
       </Modal>
+
       <Modal
-        title="*Titulo del video*"
+        title={videoSelected?.title}
+        width={750}
         centered
         visible={modalWatchVideoVisible}
         footer={null}
         destroyOnClose={true}
         onCancel={closeModalWatchVideo}
       >
-        <VideoDetail video={videoSelected} />
+        {videoSelected && (
+          <VideoDetail
+            videoMedia={videoSelected}
+            setVideoMedia={setVideoSelected}
+          />
+        )}
       </Modal>
     </Fragment>
   );

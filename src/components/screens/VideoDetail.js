@@ -1,11 +1,12 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import styled from "styled-components";
 import PropTypes from "prop-types";
 import { Button, Input, List, Space } from "antd";
 import WistiaPlayer from "../commons/WistiaPlayer";
 import Comment from "../commons/Comment";
 import moment from "moment";
-<div></div>;
+import { API_ENDPOINTS } from "../../config/api";
+import useFetch from "../../hooks/useFetch";
 
 const StyledDivContainer = styled.div`
   width: 100%;
@@ -34,81 +35,69 @@ const StyledDivCommentsContainer = styled.div`
   margin-top: 20px;
 `;
 
-const comments = [
-  {
-    content: "aaa",
-    datetime: moment().format("DD-MM-YYYY HH:mm"),
-  },
-  {
-    content: "aaa",
-    datetime: moment().format("DD-MM-YYYY HH:mm"),
-  },
-  {
-    content: "aaa",
-    datetime: moment().format("DD-MM-YYYY HH:mm"),
-  },
-  {
-    content: "aaa",
-    datetime: moment().format("DD-MM-YYYY HH:mm"),
-  },
-  {
-    content: "aaa",
-    datetime: moment().format("DD-MM-YYYY HH:mm"),
-  },
-  {
-    content: "aaa",
-    datetime: moment().format("DD-MM-YYYY HH:mm"),
-  },
-  {
-    content: "aaa",
-    datetime: moment().format("DD-MM-YYYY HH:mm"),
-  },
-  {
-    content: "aaa",
-    datetime: moment().format("DD-MM-YYYY HH:mm"),
-  },
-  {
-    content: "aaa",
-    datetime: moment().format("DD-MM-YYYY HH:mm"),
-  },
-  {
-    content: "aaa",
-    datetime: moment().format("DD-MM-YYYY HH:mm"),
-  },
-  {
-    content: "aaa",
-    datetime: moment().format("DD-MM-YYYY HH:mm"),
-  },
-  {
-    content: "aaa",
-    datetime: moment().format("DD-MM-YYYY HH:mm"),
-  },
-];
+const VideoDetail = ({ videoMedia, setVideoMedia }) => {
+  const { id, hashed_id, color, comments } = videoMedia;
+  const commentsSorted = comments.sort(
+    (a, b) => moment(b.upload_date).valueOf() - moment(a.upload_date).valueOf()
+  );
 
-const VideoDetail = ({ video }) => {
+  const [commentContent, setCommentContent] = useState("");
+
+  const [fetchBody, setFetchBody] = useState();
+  const [doFetch, { response, isCompleted, isSuccess }] = useFetch({
+    url: API_ENDPOINTS.VIDEO_COMMENTS(id),
+    options: { method: "POST" },
+    body: fetchBody,
+  });
+
+  useEffect(() => {
+    fetchBody && doFetch();
+  }, [fetchBody]);
+
+  useEffect(() => {
+    isCompleted &&
+      isSuccess &&
+      response &&
+      setVideoMedia({ ...videoMedia, comments: [...comments, response] });
+  }, [isCompleted, isSuccess, response]);
+
+  const handleSendComment = (e) => {
+    setFetchBody({ content: commentContent });
+    e.preventDefault();
+  };
+
   return (
     <StyledDivContainer>
-      <WistiaPlayer hashedId="ba104jh5i9" playerColor="#54bbff" />
+      <WistiaPlayer hashedId={hashed_id} playerColor={color} />
 
       <StyledLabelEntryComment>
         Deja tu comentario
         <StyledDivEntryComment>
-          <StyledInputComment placeholder="Comentario" />
-          <Button type="primary">Enviar</Button>
+          <StyledInputComment
+            placeholder="Comentario"
+            value={commentContent}
+            onChange={(e) => setCommentContent(e.target.value)}
+          />
+          <Button type="primary" onClick={handleSendComment}>
+            Enviar
+          </Button>
         </StyledDivEntryComment>
       </StyledLabelEntryComment>
 
       <StyledDivCommentsContainer>
         <List
-          header={`${comments.length} comentarios`}
+          header={`${commentsSorted.length} comentarios`}
           itemLayout="horizontal"
           pagination={{
             pageSize: 4,
           }}
-          dataSource={comments}
+          dataSource={commentsSorted}
           renderItem={(item) => (
             <li>
-              <Comment content={item.content} datetime={item.datetime} />
+              <Comment
+                content={item.content}
+                datetime={moment(item.upload_date).format("DD-MM-YYYY HH:mm")}
+              />
             </li>
           )}
         />
@@ -117,11 +106,9 @@ const VideoDetail = ({ video }) => {
   );
 };
 
-VideoDetail.defaultProps = {
-  video: null,
-};
 VideoDetail.propTypes = {
-  video: PropTypes.object,
+  videoMedia: PropTypes.object.isRequired,
+  setVideoMedia: PropTypes.func.isRequired,
 };
 
 export default VideoDetail;

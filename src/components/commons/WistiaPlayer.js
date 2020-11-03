@@ -18,17 +18,11 @@ const StyledDivWistiaEmbed = styled.div`
   width: "100%";
 `;
 
-const WistiaPlayer = ({ hashedId, ...embedOptions }) => {
-  window._wq = window._wq || [];
-  window._wq.push({
-    id: hashedId,
-    options: embedOptions,
-  });
-
+const WistiaPlayer = ({ hashedId, playerColor }) => {
   useEffect(() => {
-    if (!document.getElementById("wistia_script")) {
+    if (!document.getElementById("wistia_player_script")) {
       var wistiaScript = document.createElement("script");
-      wistiaScript.id = "wistia_script";
+      wistiaScript.id = "wistia_player_script";
       wistiaScript.type = "text/javascript";
       wistiaScript.src = "https://fast.wistia.com/assets/external/E-v1.js";
       wistiaScript.async = true;
@@ -38,16 +32,10 @@ const WistiaPlayer = ({ hashedId, ...embedOptions }) => {
     window._wq = window._wq || [];
     window._wq.push({
       id: hashedId,
-      options: embedOptions,
-      // onEmbedded: (video) => {
-      // console.log(video);
-      //   this.handle = video;
-      // },
+      options: {
+        playerColor: playerColor,
+      },
     });
-
-    // return () => {
-    //   this.handle && this.handle.remove();
-    // };
   }, []);
 
   return (
@@ -63,8 +51,13 @@ const WistiaPlayer = ({ hashedId, ...embedOptions }) => {
   );
 };
 
+WistiaPlayer.defaultProps = {
+  playerColor: "ffffff",
+};
+
 WistiaPlayer.propTypes = {
   hashedId: PropTypes.string.isRequired,
+  playerColor: PropTypes.string,
 };
 
 export default WistiaPlayer;
