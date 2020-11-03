@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import PropTypes from "prop-types";
-import { Button, Input, List } from "antd";
+import { Button, Input, List, Modal } from "antd";
 import WistiaPlayer from "../commons/WistiaPlayer";
 import Comment from "../commons/Comment";
 import moment from "moment";
@@ -55,17 +55,34 @@ const VideoDetail = ({ videoMedia, setVideoMedia }) => {
   }, [fetchBody]); // eslint-disable-line
 
   useEffect(() => {
-    isCompleted &&
-      isSuccess &&
-      response &&
+    if (isCompleted && isSuccess && response) {
       setVideoMedia({
         ...videoMedia,
         comments: [...comments, response],
       });
+      setCommentContent("");
+    }
   }, [isCompleted, isSuccess, response]); // eslint-disable-line
 
+  const validateData = () => {
+    var hasError = false;
+    var message = "";
+
+    if (!commentContent) {
+      hasError = true;
+      message += "El Comentario es obligatorio.\n";
+    }
+
+    hasError &&
+      Modal.warning({
+        title: "Datos obligatorios",
+        content: message.split("\n").map((msj, i) => <div key={i}>{msj}</div>),
+      });
+
+    return !hasError;
+  };
   const handleSendComment = (e) => {
-    setFetchBody({ content: commentContent });
+    validateData() && setFetchBody({ content: commentContent });
     e.preventDefault();
   };
 
